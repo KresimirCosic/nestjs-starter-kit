@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  api:
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: development
+    volumes:
+      - type: bind
+        source: .
+        target: /usr/src/app
+    env_file:
+      - .env
+    command: pnpm run start:dev
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?schema=public
+    depends_on:
+      - database
+  database:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - database:/var/lib/postgresql/data
+
+volumes:
+  database:
